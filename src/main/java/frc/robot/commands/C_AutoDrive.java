@@ -67,8 +67,9 @@ public class C_AutoDrive extends CommandBase {
     currentPose = ss_drive.getPose();
     currentAngle = currentPose.rotation.toRadians();
 
-    translationSpeed = translationController.calculate(Math.hypot(currentPose.translation.x, currentPose.translation.y), dt);
-    
+    //translationSpeed = translationController.calculate(Math.hypot(currentPose.translation.x, currentPose.translation.y), dt);
+    translationSpeed = translationController.calculate(currentPose.translation.length, dt);
+
     Vector2 translationVector = Vector2.fromAngle(translation.getAngle()).normal().scale(translationSpeed);
 
     rotationSpeed = rotationController.calculate(currentAngle, dt);
@@ -85,7 +86,7 @@ public class C_AutoDrive extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return (Math.abs(rotate - currentAngle) <= 2 * Math.PI * rotationPercentTolerance || rotate == 0.0) &&
+    return  (Math.abs(rotate - currentAngle) <= 2 * Math.PI * rotationPercentTolerance || rotate == 0.0) &&
             (Math.abs(translation.y - currentPose.translation.y) <= translation.y * translationPercentTolerance || translation.y == 0.0) &&
             (Math.abs(translation.x - currentPose.translation.x) <= translation.x * translationPercentTolerance || translation.x == 0.0) ||
             (translationSpeed <= .001 && rotationSpeed <= .0005);
