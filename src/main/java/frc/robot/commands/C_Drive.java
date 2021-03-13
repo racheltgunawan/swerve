@@ -35,7 +35,7 @@ public class C_Drive extends CommandBase {
     double strafe = -deadband(controller.getLeftXAxis().get(true));
     double rotation = -deadband(controller.getRightXAxis().get(true)) * .05; //TODO: make deadband constant
     
-    HolonomicDriveSignal drivesignal = new HolonomicDriveSignal(new Vector2(forward, strafe), rotation, false); //TODO: make variable for field oriented
+    HolonomicDriveSignal drivesignal = new HolonomicDriveSignal(new Vector2(forward, strafe), rotation, true); //TODO: make variable for field oriented
     ss_drive.drive(drivesignal);
     
   }

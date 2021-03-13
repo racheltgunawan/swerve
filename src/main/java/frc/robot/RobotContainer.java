@@ -4,6 +4,7 @@ import org.frcteam2910.common.math.Rotation2;
 import org.frcteam2910.common.math.Vector2;
 import org.frcteam2910.common.robot.UpdateManager;
 import org.frcteam2910.common.robot.input.XboxController;
+import org.frcteam2910.common.robot.input.DPadButton.Direction;
 //import org.frcteam2910.common.robot.input.XboxController;
 import org.frcteam2910.common.util.HolonomicDriveSignal;
 
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.C_Drive;
+import frc.robot.commands.C_SnapRotate;
 import frc.robot.subsystems.SS_Drivetrain;
 
 public class RobotContainer {
@@ -48,6 +50,24 @@ public class RobotContainer {
 
      public void configButtonBindings(){
          controller.getBackButton().whenPressed(() -> ss_drive.resetGyroAngle(Rotation2.ZERO), ss_drive); 
+         
+         controller.getDPadButton(Direction.UP).whenPressed(() -> new C_SnapRotate(0));
+         controller.getDPadButton(Direction.UPRIGHT).whenPressed(() -> new C_SnapRotate(1));
+         controller.getDPadButton(Direction.RIGHT).whenPressed(() -> new C_SnapRotate(2));
+         controller.getDPadButton(Direction.DOWNRIGHT).whenPressed(() -> new C_SnapRotate(3));
+         controller.getDPadButton(Direction.DOWN).whenPressed(() -> new C_SnapRotate(4));
+         controller.getDPadButton(Direction.DOWNLEFT).whenPressed(() -> new C_SnapRotate(5));
+         controller.getDPadButton(Direction.LEFT).whenPressed(() -> new C_SnapRotate(6));
+         controller.getDPadButton(Direction.UPLEFT).whenPressed(() -> new C_SnapRotate(7));
+
      }
 
+     // TODO: when d-pad pressed turn to corresponding angle - 0 45 90 135 180 225 270 315 
+     // overrides right stick when both pressed at same time 
+     // remain at angle until more d-pad or right stick input
+     // must be compatible with exisiting driving system
+
+     public void snapRotation(){
+         
+     }
 }
