@@ -11,6 +11,7 @@ import org.frcteam2910.common.util.HolonomicDriveSignal;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.C_AutoDrive;
 import frc.robot.commands.C_Drive;
 import frc.robot.commands.C_SnapRotate;
 import frc.robot.subsystems.SS_Drivetrain;
@@ -37,20 +38,19 @@ public class RobotContainer {
     // go forward and turn so that when u run drivers station it will run 
     // write a command to take a point and get to there like C_AutoDrive
 
-     //public SequentialCommandGroup getAutonomousCommand() {
-        /*
+     public SequentialCommandGroup getAutonomousCommand() {
+        
         return new SequentialCommandGroup(
-            new InstantCommand(() -> ss_drive.drive(new HolonomicDriveSignal(new Vector2(0, 1), 90.0, true)))
+            //new InstantCommand(() -> ss_drive.drive(new HolonomicDriveSignal(new Vector2(0, 1), 90.0, true)))
             new C_AutoDrive(new Vector2(-36.0, 0.0), 1.0, Math.toRadians(180), 1.0)
         );
-            ); 
-            */
             
-     //}
+            
+     }
 
      public void configButtonBindings(){
          controller.getBackButton().whenPressed(() -> ss_drive.resetGyroAngle(Rotation2.ZERO), ss_drive); 
-         
+
          controller.getDPadButton(Direction.UP).whenPressed(() -> new C_SnapRotate(0));
          controller.getDPadButton(Direction.UPRIGHT).whenPressed(() -> new C_SnapRotate(1));
          controller.getDPadButton(Direction.RIGHT).whenPressed(() -> new C_SnapRotate(2));
@@ -66,8 +66,4 @@ public class RobotContainer {
      // overrides right stick when both pressed at same time 
      // remain at angle until more d-pad or right stick input
      // must be compatible with exisiting driving system
-
-     public void snapRotation(){
-         
-     }
 }
