@@ -27,12 +27,12 @@ public class C_SnapRotate extends CommandBase {
 
   private double lastTimeStamp;
   
-  private PidController rotationController = new PidController(new PidConstants(0, 0, 0));
+  private PidController rotationController = new PidController(new PidConstants(0.5, 0, 0));
   // rotate = -0.5
   public C_SnapRotate(int toAngle) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(ss_drive);
-    this.toAngle = Math.toRadians(toAngle * 45);
+    this.toAngle = Math.toRadians(toAngle);
 
     rotationController.setSetpoint(this.toAngle);
     rotationController.setInputRange(0, 2 * Math.PI);
