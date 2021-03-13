@@ -32,6 +32,9 @@ public class C_AutoDrive extends CommandBase {
 
   private double translationSpeed;
   private double rotationSpeed;
+
+  private double translationPercentTolerance = .025;
+  private double rotationPercentTolerance = .01;
   
   public C_AutoDrive(Vector2 translation, double rotate, double translationPercentOutput, double rotationPercentOutput) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -82,6 +85,9 @@ public class C_AutoDrive extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return (Math.abs(rotate - currentAngle) <= 2 * Math.PI * rotationPercentTolerance || rotate == 0.0) &&
+            (Math.abs(translation.y - currentPose.translation.y) <= translation.y * translationPercentTolerance || translation.y == 0.0) &&
+            (Math.abs(translation.x - currentPose.translation.x) <= translation.x * translationPercentTolerance || translation.x == 0.0) ||
+            (translationSpeed <= .001 && rotationSpeed <= .0005);
   }
 }
