@@ -28,7 +28,8 @@ public class RobotContainer {
        // ss_drive.resetGyroAngle(Rotation2.fromDegrees(180));
         CommandScheduler.getInstance().setDefaultCommand(ss_drive, new C_Drive());
         updateManager.startLoop(5.0e-3);
-    
+
+        //configButtonBindings();
     } 
 
     public static XboxController getDriveController(){
@@ -51,14 +52,23 @@ public class RobotContainer {
      public void configButtonBindings(){
          controller.getBackButton().whenPressed(() -> ss_drive.resetGyroAngle(Rotation2.ZERO), ss_drive); 
 
-         controller.getDPadButton(Direction.UP).whenPressed(() -> new C_SnapRotate(0));
-         controller.getDPadButton(Direction.UPRIGHT).whenPressed(() -> new C_SnapRotate(45));
-         controller.getDPadButton(Direction.RIGHT).whenPressed(() -> new C_SnapRotate(90));
-         controller.getDPadButton(Direction.DOWNRIGHT).whenPressed(() -> new C_SnapRotate(135));
-         controller.getDPadButton(Direction.DOWN).whenPressed(() -> new C_SnapRotate(180));
-         controller.getDPadButton(Direction.DOWNLEFT).whenPressed(() -> new C_SnapRotate(225));
-         controller.getDPadButton(Direction.LEFT).whenPressed(() -> new C_SnapRotate(270));
-         controller.getDPadButton(Direction.UPLEFT).whenPressed(() -> new C_SnapRotate(315));
+        //  controller.getDPadButton(Direction.UP).whenPressed(() -> new C_SnapRotate(0));
+        //  controller.getDPadButton(Direction.UPRIGHT).whenPressed(() -> new C_SnapRotate(45));
+        //  controller.getDPadButton(Direction.RIGHT).whenPressed(() -> new C_SnapRotate(90));
+        //  controller.getDPadButton(Direction.DOWNRIGHT).whenPressed(() -> new C_SnapRotate(135));
+        //  controller.getDPadButton(Direction.DOWN).whenPressed(() -> new C_SnapRotate(180));
+        //  controller.getDPadButton(Direction.DOWNLEFT).whenPressed(() -> new C_SnapRotate(225));
+        //  controller.getDPadButton(Direction.LEFT).whenPressed(() -> new C_SnapRotate(270));
+        //  controller.getDPadButton(Direction.UPLEFT).whenPressed(() -> new C_SnapRotate(315));
+
+          controller.getDPadButton(Direction.UP).whenPressed(new C_SnapRotate(0));
+          controller.getDPadButton(Direction.UPRIGHT).whenPressed(new C_SnapRotate(45));
+          controller.getDPadButton(Direction.RIGHT).whenPressed(new C_SnapRotate(90));
+          controller.getDPadButton(Direction.DOWNRIGHT).whenPressed(new C_SnapRotate(135));
+          controller.getDPadButton(Direction.DOWN).whenPressed(new C_SnapRotate(180));
+          controller.getDPadButton(Direction.DOWNLEFT).whenPressed(new C_SnapRotate(225));
+          controller.getDPadButton(Direction.LEFT).whenPressed(new C_SnapRotate(270));
+          controller.getDPadButton(Direction.UPLEFT).whenPressed( new C_SnapRotate(315));
 
      }
 

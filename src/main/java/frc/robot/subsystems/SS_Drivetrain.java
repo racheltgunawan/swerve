@@ -17,7 +17,12 @@ import org.frcteam2910.common.math.Rotation2;
 import org.frcteam2910.common.math.Vector2;
 import org.frcteam2910.common.util.HolonomicDriveSignal;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.SerialPort.Port;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.drivers.CPRSwerveModule;
@@ -68,10 +73,85 @@ public class SS_Drivetrain extends SubsystemBase implements UpdateManager.Updata
   @GuardedBy("stateLock")
   private HolonomicDriveSignal driveSignal = new HolonomicDriveSignal(Vector2.ZERO, 0.0, false);
 
+  private NetworkTableEntry poseXEntry;
+  private NetworkTableEntry poseYEntry;
+  private NetworkTableEntry poseAngleEntry;
+
+  private NetworkTableEntry fieldOrientedEntry;  
+  private NetworkTableEntry gyroAngleEntry;
+  private NetworkTableEntry correctionAngleEntry;
+
+  private NetworkTableEntry driveSignalXEntry;
+  private NetworkTableEntry driveSignalYEntry;
+  private NetworkTableEntry driveSignalRotationEntry;
+
+  private NetworkTableEntry[] moduleAngleEntries = new NetworkTableEntry[modules.length];
+  private NetworkTableEntry[] moduleEncoderVoltageEntries = new NetworkTableEntry[modules.length];
+  private NetworkTableEntry[] moduleVelocityEntries = new NetworkTableEntry[modules.length];
+  
   public SS_Drivetrain(){
     /*synchronized (sensorLock) {
     navX.setInverted(true);      
     } */ 
+
+    ShuffleboardTab drivebaseTab = Shuffleboard.getTab("Drivebase");
+    poseXEntry = drivebaseTab.add("Pose X", 0.0)
+            .withPosition(0, 0)
+            .withSize(1, 1)
+            .getEntry();
+    poseYEntry = drivebaseTab.add("Pose Y", 0.0)
+            .withPosition(0, 1)
+            .withSize(1, 1)
+            .getEntry();
+    poseAngleEntry = drivebaseTab.add("Pose Angle", 0.0)
+            .withPosition(0, 2)
+            .withSize(1, 1)
+            .getEntry();
+
+    ShuffleboardLayout driveSignalContainer = drivebaseTab.getLayout("Drive Signal", BuiltInLayouts.kGrid)
+            .withPosition(0, 3)
+            .withSize(3, 1);
+    driveSignalYEntry = driveSignalContainer.add("Drive Signal Strafe", 0.0).getEntry();
+    driveSignalXEntry = driveSignalContainer.add("Drive Signal Forward", 0.0).getEntry();
+    driveSignalRotationEntry = driveSignalContainer.add("Drive Signal Rotation", 0.0).getEntry();
+
+
+    ShuffleboardLayout frontLeftModuleContainer = drivebaseTab.getLayout("Front Left Module", BuiltInLayouts.kList)
+            .withPosition(5, 0)
+            .withSize(2, 2);
+    moduleAngleEntries[0] = frontLeftModuleContainer.add("Angle", 0.0).getEntry();
+    moduleEncoderVoltageEntries[0] = frontLeftModuleContainer.add("Encoder Voltage", 0.0).getEntry();
+    moduleVelocityEntries[0] = frontLeftModuleContainer.add("Velocity", 0.0).getEntry();
+
+    ShuffleboardLayout frontRightModuleContainer = drivebaseTab.getLayout("Front Right Module", BuiltInLayouts.kList)
+            .withPosition(7, 0)
+            .withSize(2, 2);
+    moduleAngleEntries[1] = frontRightModuleContainer.add("Angle", 0.0).getEntry();
+    moduleEncoderVoltageEntries[1] = frontRightModuleContainer.add("Encoder Voltage", 0.0).getEntry();
+    moduleVelocityEntries[1] = frontRightModuleContainer.add("Velocity", 0.0).getEntry();
+
+    ShuffleboardLayout backLeftModuleContainer = drivebaseTab.getLayout("Back Left Module", BuiltInLayouts.kList)
+            .withPosition(5, 2)
+            .withSize(2, 2);
+    moduleAngleEntries[2] = backLeftModuleContainer.add("Angle", 0.0).getEntry();
+    moduleEncoderVoltageEntries[2] = backLeftModuleContainer.add("Encoder Voltage", 0.0).getEntry();
+    moduleVelocityEntries[2] = backLeftModuleContainer.add("Velocity", 0.0).getEntry();
+
+    ShuffleboardLayout backRightModuleContainer = drivebaseTab.getLayout("Back Right Module", BuiltInLayouts.kList)
+            .withPosition(7, 2)
+            .withSize(2, 2);
+    moduleAngleEntries[3] = backRightModuleContainer.add("Angle", 0.0).getEntry();
+    moduleEncoderVoltageEntries[3] = backRightModuleContainer.add("Encoder Voltage", 0.0).getEntry();
+    moduleVelocityEntries[3] = backRightModuleContainer.add("Velocity", 0.0).getEntry();
+
+    ShuffleboardLayout fieldOrientedContainer = drivebaseTab.getLayout("Field Oriented", BuiltInLayouts.kList).withPosition(1, 0).withSize(1, 1);
+    fieldOrientedEntry = fieldOrientedContainer.add("Field Oriented", 0.0).getEntry();
+
+    ShuffleboardLayout gyroContainer = drivebaseTab.getLayout("Gyro", BuiltInLayouts.kList).withPosition(1, 1).withSize(1, 1);
+    gyroAngleEntry = gyroContainer.add("Gyro Angle", 0.0).getEntry();
+
+    ShuffleboardLayout correctionContainer = drivebaseTab.getLayout("Correction", BuiltInLayouts.kList).withPosition(1, 2).withSize(1, 1);
+    correctionAngleEntry = correctionContainer.add("Correction", 0.0).getEntry();
   }
 
   public void drive(HolonomicDriveSignal driveSignal) {
@@ -150,9 +230,11 @@ public class SS_Drivetrain extends SubsystemBase implements UpdateManager.Updata
     }else if(signal.isFieldOriented()){
       Rotation2 correction = pose.rotation;
       velocity = new ChassisVelocity(signal.getTranslation().rotateBy(correction), signal.getRotation());
+      correctionAngleEntry.setDouble(correction.toRadians());
     }else{ 
       velocity = new ChassisVelocity(signal.getTranslation(), signal.getRotation());
     }
+
 
     Vector2[] moduleOutputs = kinematics.toModuleVelocities(velocity);
     SwerveKinematics.normalizeModuleVelocities(moduleOutputs, 1.0);
@@ -162,6 +244,13 @@ public class SS_Drivetrain extends SubsystemBase implements UpdateManager.Updata
       module.setTargetVelocity(moduleOutputs[i]);
       module.updateState(dt);
     }
+
+    poseXEntry.setDouble(pose.translation.x);
+    poseYEntry.setDouble(pose.translation.y);
+    poseAngleEntry.setDouble(pose.rotation.toDegrees());
+
+    fieldOrientedEntry.setDouble( signal == null ? 0 : (signal.isFieldOriented() ? 1 : 0));        
+    gyroAngleEntry.setDouble(navX.getAngle().toDegrees());
     
   }
 
@@ -171,5 +260,17 @@ public class SS_Drivetrain extends SubsystemBase implements UpdateManager.Updata
     /*for(int i = 0; i < modules.length; i++){
       var module = modules[i];
     }*/
+
+    for (int i = 0; i < modules.length; i++) {
+      var module = modules[i];
+      moduleAngleEntries[i].setDouble(Math.toDegrees(module.readAngle()));
+     // moduleEncoderVoltageEntries[i].setDouble(module.getEncoderVoltage());
+      moduleVelocityEntries[i].setDouble(module.getCurrentVelocity());
+    }
+    synchronized(stateLock) {
+        driveSignalYEntry.setDouble(driveSignal.getTranslation().y);
+        driveSignalXEntry.setDouble(driveSignal.getTranslation().x);
+        driveSignalRotationEntry.setDouble(driveSignal.getRotation());
+    }
   }
 }
