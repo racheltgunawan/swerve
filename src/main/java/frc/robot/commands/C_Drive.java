@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import org.frcteam2910.common.control.PidConstants;
+import org.frcteam2910.common.control.PidController;
 import org.frcteam2910.common.math.Vector2;
 import org.frcteam2910.common.robot.input.XboxController;
 import org.frcteam2910.common.robot.input.DPadButton.Direction;
@@ -11,6 +13,7 @@ import org.frcteam2910.common.robot.input.DPadButton.Direction;
 //import org.frcteam2910.common.robot.input.XboxController;
 import org.frcteam2910.common.util.HolonomicDriveSignal;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.SS_Drivetrain;
@@ -20,9 +23,15 @@ public class C_Drive extends CommandBase {
   private SS_Drivetrain ss_drive = SS_Drivetrain.getInstance();
   private XboxController controller = (XboxController) RobotContainer.getDriveController();
 
+  private PidController rotationController = new PidController(new PidConstants(0.3, 0, 0));
+
   public C_Drive() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(ss_drive);
+    rotationController.setInputRange(0, 2 * Math.PI);
+    rotationController.setContinuous(true);
+    rotationController.setOutputRange(-1.0, 1.0);
+
   }
 
   // Called when the command is initially scheduled.
@@ -39,15 +48,23 @@ public class C_Drive extends CommandBase {
   // boolean snapright = false;
   // boolean snapupright = false;
 
-  int toAngle = 0;
+  double toAngle = 0;
   boolean snap = false;
+  
+ private double lastTimeStamp;
   @Override
   public void execute() {
+    //  double currentTime = Timer.getFPGATimestamp();
+    //  double dt = currentTime - lastTimeStamp;
+    //  lastTimeStamp = currentTime;
+
     
     double forward = deadband(controller.getLeftYAxis().get(true)); 
     double strafe = -deadband(controller.getLeftXAxis().get(true));
-    //double rotation = -deadband(controller.getRightXAxis().get(true)) * .05; //TODO: make deadband constant
-    double rotation;
+    double rotation = -deadband(controller.getRightXAxis().get(true)) * .05; //TODO: make deadband constant
+    //rotationSpeed = rotationController.calculate(currentAngle, dt) * 0.01;
+
+    //double rotation;
     
     // if(controller.getDPadButton(Direction.UP).get()){
     //   toAngle = 0;
@@ -74,24 +91,28 @@ public class C_Drive extends CommandBase {
     //   toAngle = 7; 
     //   snap = true;
     // }
-    Direction[] direction = {Direction.UP, Direction.UPRIGHT, Direction.RIGHT, Direction.DOWNRIGHT, Direction.DOWN, Direction.DOWNLEFT, Direction.LEFT, Direction.UPLEFT};
-    for(int i = 0; i < direction.length; i++){
-      if(controller.getDPadButton(direction[i]).get()){
-        toAngle = i;
-        snap = true;
-      }
-    }
+    
+    //  Direction[] direction = {Direction.UP, Direction.UPRIGHT, Direction.RIGHT, Direction.DOWNRIGHT, Direction.DOWN, Direction.DOWNLEFT, Direction.LEFT, Direction.UPLEFT};
+    //  for(int i = 0; i < direction.length; i++){
+    //   if(controller.getDPadButton(direction[i]).get()){
+    //     toAngle = Math.toRadians(i * 45);
+    //     snap = true;
+    //   }
+    // }
 
-    if(snap && Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45)) > 2 * Math.PI * .01){
-      if(Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45)) > 360 - Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45))){
-        rotation = -0.01;
-      }else{
-        rotation = 0.01;
-      }
-    }else{
-      snap = false;
-      rotation = -deadband(controller.getRightXAxis().get(true)) * .05;
-    }
+   // if(snap && Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45)) > 2 * Math.PI * .01){
+    // if(snap){
+    // if(Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45)) > 360 - Math.abs(ss_drive.getPose().rotation.toRadians() - Math.toRadians(toAngle * 45))){
+      //   rotation = 0.1;
+      // }else{
+      //   rotation = -0.1;
+      // }
+    //   rotationController.setSetpoint(this.toAngle);
+    //   rotation = rotationController.calculate(ss_drive.getPose().rotation.toRadians(), dt) * 0.15;
+    // }else{
+    //   snap = false;
+    //   rotation = -deadband(controller.getRightXAxis().get(true)) * .05;
+    // }
 
     //double rotation;
     //   if(controller.getDPadButton(Direction.UP).get() && ss_drive.getPose().rotation.toRadians() != Math.toRadians(0)) {
@@ -232,7 +253,6 @@ public class C_Drive extends CommandBase {
   
     HolonomicDriveSignal drivesignal = new HolonomicDriveSignal(new Vector2(forward, strafe), rotation, true); //TODO: make variable for field oriented
     ss_drive.drive(drivesignal);
-    
   }
 
   // Called once the command ends or is interrupted.
